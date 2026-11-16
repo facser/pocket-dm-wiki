@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>《Pocket DM》DND 5e 跑團與規則圖鑑知識庫</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+    body { font-family: 'Noto Sans TC', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
+
+  <!-- 1. 頂部導覽列 (Header Bar) -->
+  <header class="border-b border-amber-500/20 bg-slate-900/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🐉</span>
+        <div>
+          <h1 class="text-xl font-bold tracking-wide text-amber-400">《Pocket DM》DND 5e 跑團圖鑑知識庫</h1>
+          <p class="text-xs text-slate-400">基於 AGENTS.md 規範建置之模組化 TRPG 規則與劇本 Wiki</p>
+        </div>
+      </div>
+
+      <!-- 內建 D20 快速檢定工具 -->
+      <div class="flex items-center gap-3 bg-slate-950 border border-amber-500/30 px-3 py-2 rounded-lg">
+        <span class="text-xs text-slate-400">快速檢定 (1d20+3 vs DC13):</span>
+        <button onclick="rollQuickD20()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded transition">
+          🎲 擲骰判定
+        </button>
+        <span id="dice-result" class="font-mono text-sm font-bold text-amber-300 min-w-[140px]">等待擲骰...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. 英雄區與搜尋篩選列 -->
+  <section class="max-w-6xl mx-auto px-4 pt-8 pb-6 w-full">
+    <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/20 rounded-xl p-6 mb-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="inline-block bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-mono px-2.5 py-0.5 rounded mb-2">
+            AGENTS.md Standard v1.0
+          </span>
+          <h2 class="text-2xl font-bold text-white mb-1">費倫大陸冒險者與地下城主手冊</h2>
+          <p class="text-sm text-slate-400">收錄創角種族、職業核心能力、怪物數據卡與《迪利安之墓》遭遇戰檢定指南。</p>
+        </div>
+        <div class="w-full md:w-72">
+          <input
+            id="search-input"
+            type="text"
+            oninput="filterCards()"
+            placeholder="🔍 搜尋規則、材料或檢定 (如: 隱匿, 矮人)..."
+            class="w-full bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-lg px-3.5 py-2 text-sm text-slate-200 outline-none transition"
+          >
+        </div>
+      </div>
+
+      <!-- 分類篩選按鈕 -->
+      <div class="flex flex-wrap gap-2 mt-5 pt-4 border-t border-slate-800" id="category-buttons">
+        <button onclick="setCategory('all')" data-cat="all" class="cat-btn bg-amber-500 text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-full transition">全部條目 (6)</button>
+        <button onclick="setCategory('race')" data-cat="race" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3.5 py-1.5 rounded-full transition">🧝 種族特質 (Races)</button>
+        <button onclick="setCategory('class')" data-cat="class" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3.5 py-1.5 rounded-full transition">⚔️ 職業能力 (Classes)</button>
+        <button onclick="setCategory('rule')" data-cat="rule" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3.5 py-1.5 rounded-full transition">⚖️ 檢定與材料規則 (Rules)</button>
+        <button onclick="setCategory('adventure')" data-cat="adventure" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3.5 py-1.5 rounded-full transition">🏰 劇本與怪物 (Adventures)</button>
+      </div>
+    </div>
+
+    <!-- 3. 圖鑑卡片網格 (#wiki-grid) - 遵循 AGENTS.md 第 4 & 5 節規範 -->
+    <div id="wiki-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- Card 1: 精靈種族 -->
+      <article data-category="race" class="wiki-card bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between transition group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono bg-emerald-950 text-emerald-300 border border-emerald-700/40 px-2 py-0.5 rounded">種族 Race</span>
+            <span class="text-xs font-mono text-slate-400">速度 30 呎 | 黑暗視覺 60 呎</span>
+          </div>
+          <h3 class="text-lg font-bold text-amber-400 group-hover:text-amber-300 mb-1">精靈 (Elf)</h3>
+          <p class="text-xs text-slate-400 mb-3">具有超凡氣質的長壽種族，天生敏銳且對魅惑魔法具備抗性。</p>
+          <div class="space-y-2 text-xs text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 mb-4">
+            <p><strong class="text-amber-300">⚙️ 屬性加成：</strong><span class="font-mono">敏捷 +2</span>（高等精靈 <span class="font-mono">智力 +1</span>）</p>
+            <p><strong class="text-amber-300">⚙️ 敏銳感官：</strong>自動獲得「察覺（Perception）」技能熟練。</p>
+            <p><strong class="text-amber-300">⚙️ 精類血統：</strong>對抗魅惑狀態具有優勢，且魔法無法使你入眠。</p>
+          </div>
+        </div>
+        <div class="border-t border-amber-500/20 bg-amber-950/20 -mx-5 -mb-5 p-4 rounded-b-xl">
+          <p class="text-xs font-bold text-amber-300 mb-1">🎲 DM 跑團檢定建議 (Tool Use)</p>
+          <p class="text-xs text-slate-300">夜間哨兵偵查埋伏：<span class="font-mono text-amber-400">感知（察覺）DC 12</span>（攜帶夜視單筒望遠鏡材料加值 <span class="font-mono">+2</span>）</p>
+        </div>
+      </article>
+
+      <!-- Card 2: 矮人種族 -->
+      <article data-category="race" class="wiki-card bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between transition group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono bg-emerald-950 text-emerald-300 border border-emerald-700/40 px-2 py-0.5 rounded">種族 Race</span>
+            <span class="text-xs font-mono text-slate-400">速度 25 呎 | 黑暗視覺 60 呎</span>
+          </div>
+          <h3 class="text-lg font-bold text-amber-400 group-hover:text-amber-300 mb-1">矮人 (Dwarf)</h3>
+          <p class="text-xs text-slate-400 mb-3">群山王國的堅毅工匠與戰士，體魄強健且精通石工與冶煉知識。</p>
+          <div class="space-y-2 text-xs text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 mb-4">
+            <p><strong class="text-amber-300">⚙️ 屬性加成：</strong><span class="font-mono">體質 +2</span>（山丘矮人生命上限額外 <span class="font-mono">+1/等級</span>）</p>
+            <p><strong class="text-amber-300">⚙️ 矮人韌性：</strong>對抗毒素傷害具抗性，毒素豁免檢定享優勢。</p>
+            <p><strong class="text-amber-300">⚙️ 石工勘察：</strong>檢定石質建築起源與暗門時，獲得雙倍熟練加值。</p>
+          </div>
+        </div>
+        <div class="border-t border-amber-500/20 bg-amber-950/20 -mx-5 -mb-5 p-4 rounded-b-xl">
+          <p class="text-xs font-bold text-amber-300 mb-1">🎲 DM 跑團檢定建議 (Tool Use)</p>
+          <p class="text-xs text-slate-300">辨識地下城石牆暗門機關：<span class="font-mono text-amber-400">智力（歷史/石工）DC 13</span>（使用工匠小錘敲擊材料加值 <span class="font-mono">+2</span>）</p>
+        </div>
+      </article>
+
+      <!-- Card 3: 遊蕩者職業 -->
+      <article data-category="class" class="wiki-card bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between transition group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono bg-purple-950 text-purple-300 border border-purple-700/40 px-2 py-0.5 rounded">職業 Class</span>
+            <span class="text-xs font-mono text-slate-400">生命骰 1d8 | 主屬性 敏捷</span>
+          </div>
+          <h3 class="text-lg font-bold text-amber-400 group-hover:text-amber-300 mb-1">遊蕩者 (Rogue)</h3>
+          <p class="text-xs text-slate-400 mb-3">陰影中的潛行專家與開鎖大師，擅長利用精準偷襲給予致命一擊。</p>
+          <div class="space-y-2 text-xs text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 mb-4">
+            <p><strong class="text-amber-300">⚙️ 專精 (Expertise)：</strong>選擇兩項技能（或盜賊工具），熟練加值翻倍。</p>
+            <p><strong class="text-amber-300">⚙️ 偷襲 (Sneak Attack)：</strong>具優勢或隊友在敵旁時，額外造成 <span class="font-mono">1d6～10d6</span> 傷害。</p>
+            <p><strong class="text-amber-300">⚙️ 靈巧動作：</strong>2 級起可用附贈動作執行疾走、撤離或躲藏。</p>
+          </div>
+        </div>
+        <div class="border-t border-amber-500/20 bg-amber-950/20 -mx-5 -mb-5 p-4 rounded-b-xl">
+          <p class="text-xs font-bold text-amber-300 mb-1">🎲 DM 跑團檢定建議 (Tool Use)</p>
+          <p class="text-xs text-slate-300">潛入並撬開首領寶箱：<span class="font-mono text-amber-400">敏捷（隱匿）DC 13</span> ＋ <span class="font-mono text-amber-400">敏捷（巧手）DC 15</span>（精良盜賊工具與潤滑油 <span class="font-mono">+3</span>）</p>
+        </div>
+      </article>
+
+      <!-- Card 4: 野蠻人職業 -->
+      <article data-category="class" class="wiki-card bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between transition group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono bg-purple-950 text-purple-300 border border-purple-700/40 px-2 py-0.5 rounded">職業 Class</span>
+            <span class="text-xs font-mono text-slate-400">生命骰 1d12 | 主屬性 力量</span>
+          </div>
+          <h3 class="text-lg font-bold text-amber-400 group-hover:text-amber-300 mb-1">野蠻人 (Barbarian)</h3>
+          <p class="text-xs text-slate-400 mb-3">燃燒原始怒火的前線狂戰士，能以肉身硬抗刀劍並粉碎障礙物。</p>
+          <div class="space-y-2 text-xs text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 mb-4">
+            <p><strong class="text-amber-300">⚙️ 狂暴 (Rage)：</strong>力量檢定與豁免享優勢，近戰傷害 <span class="font-mono">+2</span>，獲鈍擊/穿刺/揮砍抗性。</p>
+            <p><strong class="text-amber-300">⚙️ 無甲防禦：</strong>未穿護甲時，護甲等級 <span class="font-mono">AC = 10 + 敏捷 + 體質調整值</span>。</p>
+            <p><strong class="text-amber-300">⚙️ 魯莽攻擊：</strong>首擊獲得優勢，但下回合敵人對你攻擊亦享優勢。</p>
+          </div>
+        </div>
+        <div class="border-t border-amber-500/20 bg-amber-950/20 -mx-5 -mb-5 p-4 rounded-b-xl">
+          <p class="text-xs font-bold text-amber-300 mb-1">🎲 DM 跑團檢定建議 (Tool Use)</p>
+          <p class="text-xs text-slate-300">狂暴狀態強行撞破鐵門：<span class="font-mono text-amber-400">力量（運動）DC 15</span>（使用堅固鐵撬棍材料加值 <span class="font-mono">+2</span>）</p>
+        </div>
+      </article>
+
+      <!-- Card 5: 技能檢定與材料加值規則 -->
+      <article data-category="rule" class="wiki-card bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between transition group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono bg-sky-950 text-sky-300 border border-sky-700/40 px-2 py-0.5 rounded">核心規則 Rule</span>
+            <span class="text-xs font-mono text-slate-400">公式：1d20 + 調整值 + 材料</span>
+          </div>
+          <h3 class="text-lg font-bold text-amber-400 group-hover:text-amber-300 mb-1">能力檢定與材料道具加值</h3>
+          <p class="text-xs text-slate-400 mb-3">Pocket DM Agent 第一階段自動拆解檢定與評估玩家攜帶材料之核心基準。</p>
+          <div class="space-y-2 text-xs text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 mb-4">
+            <p><strong class="text-amber-300">⚙️ 難度等級 (DC)：</strong>簡單 <span class="font-mono">DC 10</span> ｜ 中等 <span class="font-mono">DC 15</span> ｜ 困難 <span class="font-mono">DC 20</span></p>
+            <p><strong class="text-amber-300">⚙️ 大成功與大失敗：</strong>擲出自然 <span class="font-mono">20</span> 為奇蹟大成功；自然 <span class="font-mono">1</span> 為喜劇性大失敗。</p>
+            <p><strong class="text-amber-300">⚙️ 材料加值規範：</strong>提供合適工具（麻繩、撬棍、草藥包、賄賂金幣）給予 <span class="font-mono">+1 至 +4</span>。</p>
+          </div>
+        </div>
+        <div class="border-t border-amber-500/20 bg-amber-950/20 -mx-5 -mb-5 p-4 rounded-b-xl">
+          <p class="text-xs font-bold text-amber-300 mb-1">🎲 DM 跑團檢定建議 (Tool Use)</p>
+          <p class="text-xs text-slate-300">說服守衛放行：<span class="font-mono text-amber-400">魅力（說服）DC 14</span>（出示貴族通行證與金幣袋材料加值 <span class="font-mono">+3</span>）</p>
+        </div>
+      </article>
+
+      <!-- Card 6: 劇本模組 迪利安之墓 -->
+      <article data-category="adventure" class="wiki-card bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 flex flex-col justify-between transition group">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-mono bg-rose-950 text-rose-300 border border-rose-700/40 px-2 py-0.5 rounded">劇本模組 Adventure</span>
+            <span class="text-xs font-mono text-slate-400">適合等級 Lv.1 | 3 大場景</span>
+          </div>
+          <h3 class="text-lg font-bold text-amber-400 group-hover:text-amber-300 mb-1">《迪利安之墓》遭遇戰指南</h3>
+          <p class="text-xs text-slate-400 mb-3">經典新手單人/小隊跑團模組，從綠龍酒館出發，深入古墓拯救鐵匠女兒。</p>
+          <div class="space-y-2 text-xs text-slate-300 bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 mb-4">
+            <p><strong class="text-amber-300">⚙️ 場景一（森林小徑）：</strong>哥布林巡邏兵（<span class="font-mono">AC 15, HP 7</span>），可透過潛行繞過或突襲。</p>
+            <p><strong class="text-amber-300">⚙️ 場景二（古墓前廳）：</strong>壓力板落石陷阱（察覺 <span class="font-mono">DC 12</span>，巧手解除 <span class="font-mono">DC 12</span>）。</p>
+            <p><strong class="text-amber-300">⚙️ 場景三（騎士密室）：</strong>解開「立誓之處」雕像謎題，迎戰地精薩滿首領。</p>
+          </div>
+        </div>
+        <div class="border-t border-amber-500/20 bg-amber-950/20 -mx-5 -mb-5 p-4 rounded-b-xl">
+          <p class="text-xs font-bold text-amber-300 mb-1">🎲 DM 跑團檢定建議 (Tool Use)</p>
+          <p class="text-xs text-slate-300">拆除古墓走廊絆線陷阱：<span class="font-mono text-amber-400">感知（察覺）DC 12</span> ＋ <span class="font-mono text-amber-400">敏捷（巧手）DC 12</span>（木楔與小刀 <span class="font-mono">+2</span>）</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- 4. AGENTS.md 擴充規範展示區 -->
+  <section class="max-w-6xl mx-auto px-4 py-8 w-full mt-auto">
+    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
+      <h3 class="text-base font-bold text-amber-400 mb-2">📜 如何使用 AGENTS.md 讓 AI 自動擴充本網站？</h3>
+      <p class="text-xs text-slate-300 leading-relaxed mb-3">
+        本專案的規則已寫入根目錄的 <code class="font-mono text-amber-300 bg-slate-950 px-1.5 py-0.5 rounded">AGENTS.md</code>。未來只需對 Claude Code、Cursor 或 Gemini 下達一行指令：
+        <span class="text-amber-200 font-medium">「請依照 AGENTS.md 規範，為網站新增一張『龍裔 (Dragonborn)』種族卡片與『聖武士 (Paladin)』職業卡片」</span>，AI 即可自動套用深色奇幻配色、等寬數值徽章、繁體中文術語以及底部的 DM Tool Use 檢定建議框，實現零誤差的模組化擴充。
+      </p>
+    </div>
+  </section>
+
+  <!-- 頁尾 -->
+  <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-500">
+    《Pocket DM》DND 5e 智慧跑團知識庫 ｜ Built with AGENTS.md Workflow & Tailwind CSS
+  </footer>
+
+  <!-- 互動腳本：分類篩選、關鍵字搜尋與 D20 擲骰器 -->
+  <script>
+    let currentCategory = 'all';
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.className = 'cat-btn bg-amber-500 text-slate-950 font-bold text-xs px-3.5 py-1.5 rounded-full transition';
+        } else {
+          btn.className = 'cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3.5 py-1.5 rounded-full transition';
+        }
+      });
+      filterCards();
+    }
+
+    function filterCards() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      document.querySelectorAll('.wiki-card').forEach(card => {
+        const matchCat = (currentCategory === 'all' || card.dataset.category === currentCategory);
+        const matchText = card.innerText.toLowerCase().includes(q);
+        card.style.display = (matchCat && matchText) ? 'flex' : 'none';
+      });
+    }
+
+    function rollQuickD20() {
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const mod = 3;
+      const total = d20 + mod;
+      const el = document.getElementById('dice-result');
+      if (d20 === 20) {
+        el.innerHTML = `🌟 Nat 20! (總和 ${total}) 大成功`;
+        el.className = 'font-mono text-sm font-bold text-emerald-400 min-w-[140px]';
+      } else if (d20 === 1) {
+        el.innerHTML = `💀 Nat 1! (總和 ${total}) 大失敗`;
+        el.className = 'font-mono text-sm font-bold text-rose-400 min-w-[140px]';
+      } else if (total >= 13) {
+        el.innerHTML = `🎲 ${d20}+3 = ${total} (✅成功)`;
+        el.className = 'font-mono text-sm font-bold text-amber-300 min-w-[140px]';
+      } else {
+        el.innerHTML = `🎲 ${d20}+3 = ${total} (❌失敗)`;
+        el.className = 'font-mono text-sm font-bold text-slate-400 min-w-[140px]';
+      }
+    }
+  </script>
+</body>
+</html>
